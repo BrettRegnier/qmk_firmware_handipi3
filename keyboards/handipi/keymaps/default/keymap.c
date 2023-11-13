@@ -3,17 +3,18 @@
 
 #include QMK_KEYBOARD_H
 
+#include <string.h>
+
 #define LAYER_TOGGLE_CHORD KC_ENT
 #define CONTROL_CHORD KC_SPC
-#define ALT_CHORD KC_TAB
+#define ALT_CHORD KC_SCLN
 
-void LayerUp(int* next_layer, const int num_layers);
-void LayerDown(int* next_layer, const int num_layers);
+// void CheckForBootloader(void);
+// void LayerUp(int* next_layer, const int num_layers);
+// void LayerDown(int* next_layer, const int num_layers);
 
 
 // Global variables
-static bool changed_layers = false;
-
 
 enum
 {
@@ -30,7 +31,7 @@ enum
 };
 
 // Tap Dance definitions
-tap_dance_action_t tap_dance_actions[] = {
+tap_dance_action_t tap_dance_actions [] = {
     // Tap once for Escape, twice for Caps Lock
     [TD_MOUSE_CLICK] = ACTION_TAP_DANCE_DOUBLE(KC_BTN1, KC_BTN2),
     [TD_L_S_BRACKET] = ACTION_TAP_DANCE_DOUBLE(KC_O, KC_LEFT_BRACKET),
@@ -95,17 +96,36 @@ const uint16_t PROGMEM keymaps [][MATRIX_ROWS][MATRIX_COLS] = {
         {KC_1,   KC_2,   KC_3,    KC_4,    KC_5,   KC_6,    KC_7,     KC_8,    KC_9,   KC_0},
         {KC_LEFT_BRACKET,   KC_RIGHT_BRACKET,   KC_LEFT_CURLY_BRACE,    KC_RIGHT_CURLY_BRACE,    KC_NO,   KC_PLUS,    KC_MINUS,     KC_UNDERSCORE,    KC_EQUAL,   KC_GRAVE},
         {KC_Z,   KC_X,   KC_C,    KC_V,    KC_B,   KC_N,    KC_M,     KC_LABK, KC_RABK, KC_BACKSLASH},
-        {KC_NO,  KC_NO,  KC_ESC,  KC_SPC,  KC_TAB, KC_ENT,  KC_LCTL,  KC_LALT,  KC_NO,  KC_NO},
+        {KC_NO,  KC_NO,  KC_ESC,  KC_SPC,  KC_TAB, KC_ENT,  KC_BSPC,  KC_LALT,  KC_NO,  KC_NO},
         {KC_NO,  KC_NO,  KC_MS_DOWN, KC_MS_LEFT, KC_MS_UP,  TD(TD_MOUSE_CLICK), KC_MS_RIGHT, KC_NO,   KC_NO,  KC_NO},
     }
 
-    // Original
-    // [0] = LAYOUT_planck_mit(
-    //     KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_BSPC,
-    //     KC_ESC,  KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,
-    //     KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_ENT,
-    //     KC_APP,  KC_LCTL, KC_LALT, KC_LGUI, KC_LT,       KC_SPC,       KC_GT,   KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT
-    // )
+    /*
+     * ┌───┬───┬───┬───┬───┐   ┌───┬───┬───┬───┬───┐
+     * │ 1 │ 2 │ 3 │ 4 │ 5 │   │ 6 │ 7 │ 8 │ 9 │ 0 │
+     * ├───┼───┼───┼───┼───┤   ├───┼───┼───┼───┼───┤
+     * │ [ │ ] │ { │ } │ G │   │ + │ - │ _ │ = │ ` │
+     * ├───┼───┼───┼───┼───┤   ├───┼───┼───┼───┼───┤
+     * │ Z │ X │ C │ V │ B │   │ N │ M │ < │ > │ \ │
+     * └───┴───├───┼───┼───┤   ├───├───┼───┼───┴───┘
+     *         │ ; │spc│tab│   │ent│ctl│alt│
+     *         └───┴───┴───┘   └───┴───┴───┘
+     *                     ┌───┐
+     *                     │MSU│
+     *                 ┌───┼───┼───┐
+     *                 │MSL│CLK│MSR│
+     *                 └───├───┼───┘
+     *                     │MSD│
+     *                     └───┘
+     */
+
+    [2] = {
+        {KC_1,   KC_2,   KC_3,    KC_4,    KC_5,   KC_6,    KC_7,     KC_8,    KC_9,   KC_0},
+        {KC_LEFT_BRACKET,   KC_RIGHT_BRACKET,   KC_LEFT_CURLY_BRACE,    KC_RIGHT_CURLY_BRACE,    KC_NO,   KC_PLUS,    KC_MINUS,     KC_UNDERSCORE,    KC_EQUAL,   KC_GRAVE},
+        {KC_Z,   KC_X,   KC_C,    KC_V,    KC_B,   KC_N,    KC_M,     KC_LABK, KC_RABK, KC_BACKSLASH},
+        {KC_NO,  KC_NO,  KC_ESC,  KC_SPC,  KC_TAB, KC_ENT,  KC_BSPC,  KC_LALT,  KC_NO,  KC_NO},
+        {KC_NO,  KC_NO,  KC_MS_DOWN, QK_BOOT, KC_MS_UP,  TD(TD_MOUSE_CLICK), KC_MS_RIGHT, KC_NO,   KC_NO,  KC_NO},
+    }
 
 };
 
@@ -127,44 +147,58 @@ const uint16_t PROGMEM keymaps [][MATRIX_ROWS][MATRIX_COLS] = {
 //     }
 // }
 
-void LayerUp(int* next_layer, const int num_layers)
-{
+// void CheckForBootloader()
+// {
+//     if (toggle_chord_active && alt_chord_active && control_chord_active)
+//     {
+//         // Put into bootloader mode
+//         // uint16_t boot = QK_BOOT;
+//         tap_code16(QK_BOOT);
+//     }
+// }
 
-    if (*next_layer + 1 == num_layers)
-    {
-        return;
-    }
+// void LayerUp(int* next_layer, const int num_layers)
+// {
 
-    changed_layers = true;
-    layer_off(*next_layer++);
-    layer_on(*next_layer);
-}
+//     if (*next_layer + 1 == num_layers)
+//     {
+//         return;
+//     }
 
-void LayerDown(int* next_layer, const int num_layers)
-{
-    if (*next_layer == 0)
-    {
-        return;
-    }
+//     changed_layers = true;
+//     layer_off(*next_layer++);
+//     layer_on(*next_layer);
+// }
 
-    changed_layers = true;
-    layer_off(*next_layer--);
-    layer_on(*next_layer);
-}
+// void LayerDown(int* next_layer, const int num_layers)
+// {
+//     if (*next_layer == 0)
+//     {
+//         return;
+//     }
+
+//     changed_layers = true;
+//     layer_off(*next_layer--);
+//     layer_on(*next_layer);
+// }
 
 bool process_record_user(uint16_t keycode, keyrecord_t* record)
 {
-    static bool toggle_chord_active = false;
     static int next_layer = 0;
     static int num_layers = sizeof(keymaps) / sizeof(keymaps[0]);
 
+    static bool changed_layers = false;
+    static bool toggle_chord_active = false;
     static bool control_chord_active = false;
     static bool alt_chord_active = false;
-
     static bool any_key_press = false;
+
+
+    // CheckForBootloader();
 
     switch (keycode)
     {
+
         case LAYER_TOGGLE_CHORD:
         {
 
@@ -221,7 +255,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record)
                 if (alt_chord_active && !any_key_press)
                 {
                     alt_chord_active = false;
-                    tap_code(CONTROL_CHORD);
+                    tap_code(ALT_CHORD);
                 }
                 else if (alt_chord_active && any_key_press)
                 {
@@ -242,10 +276,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record)
             // Send a control chord before the current key?
             // Unregister the current key and then re-register it
             unregister_code(keycode);
-            register_code(KC_LCTL);
-            register_code(keycode);
-            unregister_code(CONTROL_CHORD);
-            control_chord_active = false;
+            tap_code16(QK_LCTL | keycode);
+
             return false;
         }
         else if (alt_chord_active)
@@ -253,35 +285,53 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record)
             // Send a control chord before the current key?
             // Unregister the current key and then re-register it
             unregister_code(keycode);
-            register_code(KC_LALT);
-            register_code(keycode);
-            unregister_code(ALT_CHORD);
-            alt_chord_active = false;
+            tap_code16(QK_LALT | keycode);
+
             return false;
         }
-        else if (toggle_chord_active)
+        if (toggle_chord_active)
         {
             switch (keycode)
             {
                 case KC_UP:
                 {
-                    LayerUp(&next_layer, num_layers);
-                    return false;
+                    if (next_layer + 1 != num_layers)
+                    {
+                        changed_layers = true;
+                        layer_off(next_layer++);
+                        layer_on(next_layer);
+                        return false;
+                    }
                 }
                 case KC_MS_UP:
                 {
-                    LayerUp(&next_layer, num_layers);
-                    return false;
+                    if (next_layer + 1 != num_layers)
+                    {
+                        changed_layers = true;
+                        layer_off(next_layer++);
+                        layer_on(next_layer);
+                        return false;
+                    }
                 }
                 case KC_DOWN:
                 {
-                    LayerDown(&next_layer, num_layers);
-                    return false;
+                    if (next_layer > 0)
+                    {
+                        changed_layers = true;
+                        layer_off(next_layer--);
+                        layer_on(next_layer);
+                        return false;
+                    }
                 }
                 case KC_MS_DOWN:
                 {
-                    LayerDown(&next_layer, num_layers);
-                    return false;
+                    if (next_layer > 0)
+                    {
+                        changed_layers = true;
+                        layer_off(next_layer--);
+                        layer_on(next_layer);
+                        return false;
+                    }
                 }
             }
         }

@@ -1,7 +1,7 @@
 import RPi.GPIO
 import time
 
-reset = 17
+reset = 16
 bootloader = 18
 
 GPIO.setmode(GPIO.BOARD)
