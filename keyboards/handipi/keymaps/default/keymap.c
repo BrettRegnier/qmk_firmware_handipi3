@@ -98,7 +98,7 @@ const uint16_t PROGMEM keymaps [][MATRIX_ROWS][MATRIX_COLS] = {
         {KC_Z,   KC_X,   KC_C,    KC_V,    KC_B,   KC_N,    KC_M,     KC_LABK, KC_RABK, KC_BACKSLASH},
         {KC_NO,  KC_NO,  KC_ESC,  KC_SPC,  KC_TAB, KC_ENT,  KC_BSPC,  KC_LALT,  KC_NO,  KC_NO},
         {KC_NO,  KC_NO,  KC_MS_DOWN, KC_MS_LEFT, KC_MS_UP,  TD(TD_MOUSE_CLICK), KC_MS_RIGHT, KC_NO,   KC_NO,  KC_NO},
-    }
+    },
 
     /*
      * ┌───┬───┬───┬───┬───┐   ┌───┬───┬───┬───┬───┐
@@ -120,11 +120,11 @@ const uint16_t PROGMEM keymaps [][MATRIX_ROWS][MATRIX_COLS] = {
      */
 
     [2] = {
-        {KC_1,   KC_2,   KC_3,    KC_4,    KC_5,   KC_6,    KC_7,     KC_8,    KC_9,   KC_0},
-        {KC_LEFT_BRACKET,   KC_RIGHT_BRACKET,   KC_LEFT_CURLY_BRACE,    KC_RIGHT_CURLY_BRACE,    KC_NO,   KC_PLUS,    KC_MINUS,     KC_UNDERSCORE,    KC_EQUAL,   KC_GRAVE},
-        {KC_Z,   KC_X,   KC_C,    KC_V,    KC_B,   KC_N,    KC_M,     KC_LABK, KC_RABK, KC_BACKSLASH},
-        {KC_NO,  KC_NO,  KC_ESC,  KC_SPC,  KC_TAB, KC_ENT,  KC_BSPC,  KC_LALT,  KC_NO,  KC_NO},
-        {KC_NO,  KC_NO,  KC_MS_DOWN, QK_BOOT, KC_MS_UP,  TD(TD_MOUSE_CLICK), KC_MS_RIGHT, KC_NO,   KC_NO,  KC_NO},
+        {KC_NO,   KC_NO,   KC_NO,      KC_NO,      KC_NO,    KC_NO,  KC_NO,       KC_NO, KC_NO, KC_NO},
+        {KC_NO,   KC_NO,   KC_NO,      KC_NO,      KC_NO,    KC_NO,  KC_NO,       KC_NO, KC_NO, KC_NO},
+        {KC_NO,   KC_NO,   KC_NO,      KC_NO,      KC_NO,    KC_NO,  KC_NO,       KC_NO, KC_NO, QK_BOOT},
+        {KC_NO,   KC_NO,   KC_NO,      KC_NO,      KC_NO,    KC_ENT, KC_NO,       KC_NO, KC_NO, KC_NO},
+        {KC_NO,   KC_NO,   KC_MS_DOWN, KC_MS_LEFT, KC_MS_UP, KC_NO,  KC_MS_RIGHT, KC_NO, KC_NO, KC_NO},
     }
 
 };
@@ -191,7 +191,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record)
     static bool toggle_chord_active = false;
     static bool control_chord_active = false;
     static bool alt_chord_active = false;
-    static bool any_key_press = false;
+    static bool did_combo = false;
 
 
     // CheckForBootloader();
@@ -230,15 +230,15 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record)
             }
             else
             {
-                if (control_chord_active && !any_key_press)
+                if (control_chord_active && !did_combo)
                 {
                     control_chord_active = false;
                     tap_code(CONTROL_CHORD);
                 }
-                else if (control_chord_active && any_key_press)
+                else if (control_chord_active && did_combo)
                 {
                     control_chord_active = false;
-                    any_key_press = false;
+                    did_combo = false;
                 }
             }
 
@@ -252,15 +252,15 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record)
             }
             else
             {
-                if (alt_chord_active && !any_key_press)
+                if (alt_chord_active && !did_combo)
                 {
                     alt_chord_active = false;
                     tap_code(ALT_CHORD);
                 }
-                else if (alt_chord_active && any_key_press)
+                else if (alt_chord_active && did_combo)
                 {
                     alt_chord_active = false;
-                    any_key_press = false;
+                    did_combo = false;
                 }
             }
 
@@ -270,13 +270,13 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record)
 
     if (record->event.pressed)
     {
-        any_key_press = true;
         if (control_chord_active)
         {
             // Send a control chord before the current key?
             // Unregister the current key and then re-register it
             unregister_code(keycode);
             tap_code16(QK_LCTL | keycode);
+            did_combo = true;
 
             return false;
         }
@@ -286,6 +286,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record)
             // Unregister the current key and then re-register it
             unregister_code(keycode);
             tap_code16(QK_LALT | keycode);
+            did_combo = true;
+
 
             return false;
         }
