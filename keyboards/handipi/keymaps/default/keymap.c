@@ -297,43 +297,43 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record)
             {
                 case KC_UP:
                 {
+                    changed_layers = true;
                     if (next_layer + 1 != num_layers)
                     {
-                        changed_layers = true;
                         layer_off(next_layer++);
                         layer_on(next_layer);
-                        return false;
                     }
+                    return false;
                 }
                 case KC_MS_UP:
                 {
+                    changed_layers = true;
                     if (next_layer + 1 != num_layers)
                     {
-                        changed_layers = true;
                         layer_off(next_layer++);
                         layer_on(next_layer);
-                        return false;
                     }
+                    return false;
                 }
                 case KC_DOWN:
                 {
+                    changed_layers = true;
                     if (next_layer > 0)
                     {
-                        changed_layers = true;
                         layer_off(next_layer--);
                         layer_on(next_layer);
-                        return false;
                     }
+                    return false;
                 }
                 case KC_MS_DOWN:
                 {
+                    changed_layers = true;
                     if (next_layer > 0)
                     {
-                        changed_layers = true;
                         layer_off(next_layer--);
                         layer_on(next_layer);
-                        return false;
                     }
+                    return false;
                 }
             }
         }
